@@ -210,14 +210,11 @@ def count_layers(model):
 
 
 def test_model(trainingparams: TrainingParams,):
-    # device = torch.device("mps")
     trainingparams.model.eval()
     with torch.no_grad():
         total = 0
         correct = 0
-        for data in trainingparams.test_loader:
-            # inputs, targets = data[0].to(device), data[1].to(device)
-            inputs, targets = data
+        for inputs, targets in trainingparams.test_loader:
 
             if trainingparams.criterion._get_name() == "BCELoss":
                 
@@ -241,7 +238,6 @@ def cnn_training_test_loop(trainingparams: TrainingParams):
     create a instance for TrainingParams
     cnn_training_test_loop(trainingparams)
     """
-    # device = torch.device("mps")
     optimizer = trainingparams.set_optimizer()
     convu_numb, dense_numb = count_layers(trainingparams.model)
     trainingparams.convu_numb = convu_numb
@@ -270,19 +266,14 @@ def cnn_training_test_loop(trainingparams: TrainingParams):
         total = 0
         num_zeros = 0
         num_ones = 0
-        trainingparams.model = trainingparams.model.to('mps')
 
 
-        for data in train_loader:
-            # inputs, target = data[0].to(device), data[1].to(device)
-            inputs, target = data
+        for inputs, target in train_loader:
             optimizer.zero_grad()
 
             if trainingparams.criterion._get_name() == "BCELoss":
-                inputs = inputs.to("mps")
                 output = trainingparams.model(inputs).squeeze(1)
-                target = target.to("mps").float()
-                train_loss = trainingparams.criterion(output, target)
+                train_loss = trainingparams.criterion(output, target.float())
 
             elif trainingparams.criterion._get_name() == "CrossEntropyLoss":
                 output = trainingparams.model(inputs)
@@ -296,13 +287,10 @@ def cnn_training_test_loop(trainingparams: TrainingParams):
 
         trainingparams.model.eval()
         with torch.no_grad():
-            for data in validation_loader:
-                # inputs, targets = data[0].to(device), data[1].to(device)
-                inputs, targets = data
+            for inputs, targets in validation_loader:
                 if trainingparams.criterion._get_name() == "BCELoss":
                     outputs = trainingparams.model(inputs).squeeze(1)
-                    targets = targets.to("mps").float()
-                    test_loss = trainingparams.criterion(outputs, targets)
+                    test_loss = trainingparams.criterion(outputs, targets.float())
                     predicted = torch.round(outputs)
 
                 elif trainingparams.criterion._get_name() == "CrossEntropyLoss":
